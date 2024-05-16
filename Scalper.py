@@ -1,5 +1,9 @@
+import colorama
 import statsapi
 import datetime
+import math
+
+colorama.init()
 
 # Get today's date
 today = datetime.date.today().strftime('%Y-%m-%d')
@@ -11,7 +15,7 @@ games = statsapi.schedule(date=today)
 pitchers = []
 
 # Loop through the games
-# print(f"\033[1m\033[34mGames for: {datetime.date.today().strftime('%x')} \033[0m")
+print(f"\033[1m\033[34mGames for: {datetime.date.today().strftime('%x')} \033[0m")
 for game in games:
     # Get the home team, away team, and their probable pitchers
     home_team = game['home_name']
@@ -37,22 +41,25 @@ for game in games:
     away_pitcher_era = away_pitcher_stats['stats'][0]['stats']['era']
     away_pitcher_games = away_pitcher_stats['stats'][0]['stats']['gamesPlayed']
 
+    standings = statsapi.standings_data(season=2024)
+    total_games = standings[201]['teams'][0]['w'] + standings[201]['teams'][0]['l']
+
     # Add the details of the home pitcher to the list
-    if home_pitcher_games >= 5:
+    if home_pitcher_games >= math.floor(.2 * total_games):
       pitchers.append((home_pitcher_name, home_pitcher_era, home_team, away_team))
 
     # Add the details of the away pitcher to the list
-    if away_pitcher_games >= 5:
+    if away_pitcher_games >= math.floor(.2 * total_games):
       pitchers.append((away_pitcher_name, away_pitcher_era, away_team, home_team))
 
     # Print the details
-    # print(f"Home Team: {home_team} ({home_pitcher_name}, ERA: {home_pitcher_era}), Away Team: {away_team} ({away_pitcher_name}, ERA: {away_pitcher_era})")
+    print(f"Home Team: {home_team} ({home_pitcher_name}, ERA: {home_pitcher_era}), Away Team: {away_team} ({away_pitcher_name}, ERA: {away_pitcher_era})")
 
 # Sort the list by ERA
 pitchers.sort(key=lambda x: x[1])
 
 # Print the pitchers with the lowest 5 ERAs
-# print("\n\033[1m\033[34mTop 5 Pitchers with the Lowest ERAs:\033[0m")
+print("\n\033[1m\033[34mTop 5 Pitchers with the Lowest ERAs:\033[0m")
 for i in range(5):
     opposing_team = pitchers[i][3]
 
@@ -60,7 +67,6 @@ for i in range(5):
 
      # Get the roster of the opposing team
     roster = statsapi.get('team_roster', {'teamId': statsapi.lookup_team(opposing_team)[0]['id']})
-
 
     # Initialize a list to store the player's name and OBP
     players_ops = []
