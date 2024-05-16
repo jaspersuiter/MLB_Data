@@ -1,9 +1,6 @@
-import colorama
 import statsapi
 import datetime
 import math
-
-colorama.init()
 
 # Get today's date
 today = datetime.date.today().strftime('%Y-%m-%d')
@@ -53,7 +50,7 @@ for game in games:
       pitchers.append((away_pitcher_name, away_pitcher_era, away_team, home_team))
 
     # Print the details
-    print(f"Home Team: {home_team} ({home_pitcher_name}, ERA: {home_pitcher_era}), Away Team: {away_team} ({away_pitcher_name}, ERA: {away_pitcher_era})")
+    print(f"{away_team} ({away_pitcher_name}, \033[32mERA: {away_pitcher_era}\033[0m) @ {home_team} ({home_pitcher_name}, \033[32mERA: {home_pitcher_era}\033[0m)")
 
 # Sort the list by ERA
 pitchers.sort(key=lambda x: x[1])
@@ -63,7 +60,7 @@ print("\n\033[1m\033[34mTop 5 Pitchers with the Lowest ERAs:\033[0m")
 for i in range(5):
     opposing_team = pitchers[i][3]
 
-    print(f"{i + 1}. Pitcher: {pitchers[i][0]}, Game: {pitchers[i][2]} vs {opposing_team}, \033[32mERA: {pitchers[i][1]}\033[0m")
+    print(f"\033[1m\u001b[4m{i + 1}. {pitchers[i][0]}, {pitchers[i][2]} vs {opposing_team}, \033[32mERA: {pitchers[i][1]}\033[0m")
 
      # Get the roster of the opposing team
     roster = statsapi.get('team_roster', {'teamId': statsapi.lookup_team(opposing_team)[0]['id']})
@@ -93,4 +90,4 @@ for i in range(5):
 
     # Print the first 5 players with the lowest OBP
     for player_name, player_ops in players_ops[:3]:
-        print(f"    Batter: {player_name}, \033[0;31mOPS: {player_ops}\033[0m")
+        print(f"    {player_name}, \033[0;31mOPS: {player_ops}\033[0m")
