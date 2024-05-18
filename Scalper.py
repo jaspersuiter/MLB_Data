@@ -1,6 +1,7 @@
 import statsapi
 import datetime
 import math
+from Lineups import get_lineups
 
 # Get today's date
 today = datetime.date.today().strftime('%Y-%m-%d')
@@ -10,7 +11,7 @@ games = statsapi.schedule(date=today)
 
 # List to store the details of each pitcher
 pitchers = []
-
+away_batters, home_batters = get_lineups()
 # Loop through the games
 print(f"\033[1m\033[34mGames for: {datetime.date.today().strftime('%x')} \033[0m")
 for game in games:
