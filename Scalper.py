@@ -9,6 +9,7 @@ from pybaseball import playerid_lookup
 
 # Get today's date
 today = datetime.date.today().strftime('%Y-%m-%d')
+now = datetime.datetime.now()
 
 # Get the schedule for today's date
 games = statsapi.schedule(date=today)
@@ -17,14 +18,14 @@ games = statsapi.schedule(date=today)
 pitchers = []
 
 # Loop through the games
-print(f"\033[1m\033[34mGames for: {datetime.date.today().strftime('%x')} \033[0m")
+print(f"\033[1m\033[34mGames for: {datetime.date.today().strftime('%x')} starting after {now.strftime('%I:%M %p')}  \033[0m")
 for game in games:
     
     game_datetime = datetime.datetime.fromisoformat(game['game_datetime'].rstrip('Z'))
     game_datetime -= timedelta(hours=4)
     formatted_game_datetime = game_datetime.strftime('%Y%m%d_%H%M%S')
 
-    if formatted_game_datetime < datetime.datetime.now().strftime('%Y%m%d_%H%M%S'):
+    if formatted_game_datetime < now.strftime('%Y%m%d_%H%M%S'):
         continue
     
     
@@ -56,11 +57,11 @@ for game in games:
     total_games = standings[201]['teams'][0]['w'] + standings[201]['teams'][0]['l']
 
     # Add the details of the home pitcher to the list
-    if home_pitcher_games >= math.floor(.2 * total_games):
+    if home_pitcher_games >= math.floor(.15 * total_games):
       pitchers.append((home_pitcher_name, home_pitcher_era, home_team, away_team, "away", game['game_id']))
 
     # Add the details of the away pitcher to the list
-    if away_pitcher_games >= math.floor(.2 * total_games):
+    if away_pitcher_games >= math.floor(.15 * total_games):
       pitchers.append((away_pitcher_name, away_pitcher_era, away_team, home_team, "home", game['game_id']))
 
     # Print the details
@@ -72,20 +73,23 @@ pitchers.sort(key=lambda x: x[1])
 # Print the pitchers with the lowest 5 ERAs
 print("\n\033[1m\033[34mTop 5 Pitchers with the Lowest ERAs:\033[0m")
 for i in range(5):
-    opposing_team = pitchers[i][3]
+    try:
+        opposing_team = pitchers[i][3]
 
-    print(f"\033[1m\u001b[4m{i + 1}. {pitchers[i][0]}, {pitchers[i][2]} vs {opposing_team}, \033[32mERA: {pitchers[i][1]}\033[0m")
+        print(f"\033[1m\u001b[4m{i + 1}. {pitchers[i][0]}, {pitchers[i][2]} vs {opposing_team}, \033[32mERA: {pitchers[i][1]}\033[0m")
 
-    # Get the lineup of the opposing team
-    now = datetime.datetime.now()
+        # Get the lineup of the opposing team
+        now = datetime.datetime.now()
 
-    # Format the date and time as a string in the format YYYYMMDD_HHMMSS
-    formatted_now = now.strftime('%Y%m%d_%H%M%S')
-    boxscore = statsapi.boxscore_data(pitchers[i][5], now)
-    batters = get_lineups(boxscore, pitchers[i][4])
+        # Format the date and time as a string in the format YYYYMMDD_HHMMSS
+        formatted_now = now.strftime('%Y%m%d_%H%M%S')
+        boxscore = statsapi.boxscore_data(pitchers[i][5], now)
+        batters = get_lineups(boxscore, pitchers[i][4])
 
-    sort_batters(batters)
+        batters = sort_batters(batters)
 
-    # Print the first 5 players with the lowest OPS
-    for name, id, ops, xwOBA in batters[:3]:
-        print(f"    {name}, \033[0;31mxwOBA: {xwOBA}\033[0m, \033[1;31mOPS: {ops}\033[0m")
+        # Print the first 5 players with the lowest OPS
+        for name, id, ops, xwOBA, run_coefficient in batters[:4]:
+            print(f"    {name}, Run coefficient: \033[0;32m{run_coefficient}\033[0m, xwOBA: \033[0;31m{xwOBA}\033[0m, OPS: \033[1;31m{ops}\033[0m")
+    except IndexError:
+        break
