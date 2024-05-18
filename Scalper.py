@@ -2,6 +2,8 @@ import statsapi
 import datetime
 import math
 from Lineups import get_lineups
+from pybaseball import statcast_batter
+from pybaseball import playerid_lookup
 
 # Get today's date
 today = datetime.date.today().strftime('%Y-%m-%d')
@@ -71,9 +73,11 @@ for i in range(5):
     boxscore = statsapi.boxscore_data(pitchers[i][5], "20240517_190000")
     batters = get_lineups(boxscore, pitchers[i][4])
 
+    
     # Sort the list by OPS
     batters.sort(key=lambda x: x[2])
 
     # Print the first 5 players with the lowest OPS
     for name, id, ops in batters[:3]:
         print(f"    {name}, \033[0;31mOPS: {ops}\033[0m")
+        print(statcast_batter('2024-03-28', player_id = id)['player_name'])
