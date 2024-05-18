@@ -1,7 +1,9 @@
 import statsapi
 import datetime
+from datetime import timedelta
 import math
 from Lineups import get_lineups
+from Sorting import sort_batters
 from pybaseball import statcast_batter
 from pybaseball import playerid_lookup
 
@@ -9,7 +11,7 @@ from pybaseball import playerid_lookup
 today = datetime.date.today().strftime('%Y-%m-%d')
 
 # Get the schedule for today's date
-games = statsapi.schedule(date="2024-05-17")
+games = statsapi.schedule(date=today)
 
 # List to store the details of each pitcher
 pitchers = []
@@ -17,6 +19,15 @@ pitchers = []
 # Loop through the games
 print(f"\033[1m\033[34mGames for: {datetime.date.today().strftime('%x')} \033[0m")
 for game in games:
+    
+    game_datetime = datetime.datetime.fromisoformat(game['game_datetime'].rstrip('Z'))
+    game_datetime -= timedelta(hours=4)
+    formatted_game_datetime = game_datetime.strftime('%Y%m%d_%H%M%S')
+
+    if formatted_game_datetime < datetime.datetime.now().strftime('%Y%m%d_%H%M%S'):
+        continue
+    
+    
     # Get the home team, away team, and their probable pitchers
     home_team = game['home_name']
     away_team = game['away_name']
@@ -70,14 +81,11 @@ for i in range(5):
 
     # Format the date and time as a string in the format YYYYMMDD_HHMMSS
     formatted_now = now.strftime('%Y%m%d_%H%M%S')
-    boxscore = statsapi.boxscore_data(pitchers[i][5], "20240517_190000")
+    boxscore = statsapi.boxscore_data(pitchers[i][5], now)
     batters = get_lineups(boxscore, pitchers[i][4])
 
-    
-    # Sort the list by OPS
-    batters.sort(key=lambda x: x[2])
+    sort_batters(batters)
 
     # Print the first 5 players with the lowest OPS
-    for name, id, ops in batters[:3]:
-        print(f"    {name}, \033[0;31mOPS: {ops}\033[0m")
-        print(statcast_batter('2024-03-28', player_id = id)['player_name'])
+    for name, id, ops, xwOBA in batters[:3]:
+        print(f"    {name}, \033[0;31mxwOBA: {xwOBA}\033[0m, \033[1;31mOPS: {ops}\033[0m")
