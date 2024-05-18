@@ -7,11 +7,11 @@ from Lineups import get_lineups
 today = datetime.date.today().strftime('%Y-%m-%d')
 
 # Get the schedule for today's date
-games = statsapi.schedule(date=today)
+games = statsapi.schedule(date="2024-05-17")
 
 # List to store the details of each pitcher
 pitchers = []
-away_batters, home_batters = get_lineups()
+
 # Loop through the games
 print(f"\033[1m\033[34mGames for: {datetime.date.today().strftime('%x')} \033[0m")
 for game in games:
@@ -44,11 +44,11 @@ for game in games:
 
     # Add the details of the home pitcher to the list
     if home_pitcher_games >= math.floor(.2 * total_games):
-      pitchers.append((home_pitcher_name, home_pitcher_era, home_team, away_team))
+      pitchers.append((home_pitcher_name, home_pitcher_era, home_team, away_team, "away", game['game_id']))
 
     # Add the details of the away pitcher to the list
     if away_pitcher_games >= math.floor(.2 * total_games):
-      pitchers.append((away_pitcher_name, away_pitcher_era, away_team, home_team))
+      pitchers.append((away_pitcher_name, away_pitcher_era, away_team, home_team, "home", game['game_id']))
 
     # Print the details
     print(f"{away_team} ({away_pitcher_name}, \033[32mERA: {away_pitcher_era}\033[0m) @ {home_team} ({home_pitcher_name}, \033[32mERA: {home_pitcher_era}\033[0m)")
@@ -63,32 +63,17 @@ for i in range(5):
 
     print(f"\033[1m\u001b[4m{i + 1}. {pitchers[i][0]}, {pitchers[i][2]} vs {opposing_team}, \033[32mERA: {pitchers[i][1]}\033[0m")
 
-     # Get the roster of the opposing team
-    roster = statsapi.get('team_roster', {'teamId': statsapi.lookup_team(opposing_team)[0]['id']})
+    # Get the lineup of the opposing team
+    now = datetime.datetime.now()
 
-    # Initialize a list to store the player's name and OBP
-    players_ops = []
+    # Format the date and time as a string in the format YYYYMMDD_HHMMSS
+    formatted_now = now.strftime('%Y%m%d_%H%M%S')
+    boxscore = statsapi.boxscore_data(pitchers[i][5], "20240517_190000")
+    batters = get_lineups(boxscore, pitchers[i][4])
 
-    # Loop through the players in the roster
-    for player in roster['roster']:
-        # Get the player's name and ID
-        player_name = player['person']['fullName']
-        player_id = player['person']['id']
+    # Sort the list by OPS
+    batters.sort(key=lambda x: x[2])
 
-        # Get the player's stats
-        player_stats = statsapi.player_stat_data(player_id, group='[hitting]', type='season', sportId=1)
-
-        # Check if the player has any stats and has at least 15 at-bats and an 'obp' in their stats
-        if player_stats['stats'] and player_stats['stats'][0]['stats'].get('atBats', 0) >= (3.1 * player_stats['stats'][0]['stats'].get('gamesPlayed', 0)) and 'ops' in player_stats['stats'][0]['stats']:
-            # Get the player's OBP
-            player_ops = player_stats['stats'][0]['stats']['ops']
-
-            # Add the player's name and OBP to the list
-            players_ops.append((player_name, player_ops))
-
-    # Sort the list by OBP
-    players_ops.sort(key=lambda x: x[1])
-
-    # Print the first 5 players with the lowest OBP
-    for player_name, player_ops in players_ops[:3]:
-        print(f"    {player_name}, \033[0;31mOPS: {player_ops}\033[0m")
+    # Print the first 5 players with the lowest OPS
+    for name, id, ops in batters[:3]:
+        print(f"    {name}, \033[0;31mOPS: {ops}\033[0m")
