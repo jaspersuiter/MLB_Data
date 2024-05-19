@@ -89,7 +89,7 @@ for i in range(5):
         batters = sort_batters(batters)
 
         # Print the first 5 players with the lowest OPS
-        for name, id, ops, xwOBA, run_coefficient in batters[:4]:
+        for name, id, ops, xwOBA, run_coefficient in batters[:3]:
             print(f"    {name}, Run coefficient: \033[0;32m{run_coefficient}\033[0m, xwOBA: \033[0;31m{xwOBA}\033[0m, OPS: \033[1;31m{ops}\033[0m")
     except IndexError:
         break
