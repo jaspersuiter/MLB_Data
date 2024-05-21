@@ -12,7 +12,7 @@ today = datetime.date.today().strftime('%Y-%m-%d')
 now = datetime.datetime.now()
 
 # Get the schedule for _ date
-games = statsapi.schedule(date="2024-05-19")
+games = statsapi.schedule(date="2024-05-21")
 
 # List to store the details of each pitcher
 pitchers = []

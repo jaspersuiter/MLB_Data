@@ -3,7 +3,7 @@ import datetime
 from datetime import timedelta
 import math
 from Lineups import get_lineups
-from Sorting import sort_batters
+from Sorting import sort_batters, sort_pitchers
 from pybaseball import statcast_batter
 from pybaseball import playerid_lookup
 
@@ -58,17 +58,17 @@ for game in games:
 
     # Add the details of the home pitcher to the list
     if home_pitcher_games >= math.floor(.15 * total_games):
-      pitchers.append((home_pitcher_name, home_pitcher_era, home_team, away_team, "away", game['game_id']))
+      pitchers.append((home_pitcher_name, home_pitcher_era, home_team, away_team, "away", game['game_id'], home_pitcher_id))
 
     # Add the details of the away pitcher to the list
     if away_pitcher_games >= math.floor(.15 * total_games):
-      pitchers.append((away_pitcher_name, away_pitcher_era, away_team, home_team, "home", game['game_id']))
+      pitchers.append((away_pitcher_name, away_pitcher_era, away_team, home_team, "home", game['game_id'], away_pitcher_id))
 
     # Print the details
-    print(f"{away_team} ({away_pitcher_name}, \033[32mERA: {away_pitcher_era}\033[0m) @ {home_team} ({home_pitcher_name}, \033[32mERA: {home_pitcher_era}\033[0m)")
+    print(f"{away_team} ({away_pitcher_name}, \033[32mERA: {away_pitcher_era}\033[0m) @ {home_team} ({home_pitcher_name}, \033[32mERA: {home_pitcher_era}\033[0m) \033[1m\033[34m{game_datetime.strftime('%I:%M %p')}\033[0m")
 
 # Sort the list by ERA
-pitchers.sort(key=lambda x: x[1])
+sort_pitchers(pitchers)
 
 # Print the pitchers with the lowest 5 ERAs
 print("\n\033[1m\033[34mTop 5 Pitchers with the Lowest ERAs:\033[0m")
