@@ -4,8 +4,6 @@ from datetime import timedelta
 import math
 from Lineups import get_lineups
 from Sorting import sort_batters, sort_pitchers
-from pybaseball import statcast_batter
-from pybaseball import playerid_lookup
 
 # Get today's date
 today = datetime.date.today().strftime('%Y-%m-%d')
@@ -27,7 +25,6 @@ for game in games:
 
     if formatted_game_datetime < now.strftime('%Y%m%d_%H%M%S'):
         continue
-    
     
     # Get the home team, away team, and their probable pitchers
     home_team = game['home_name']
@@ -67,16 +64,15 @@ for game in games:
     # Print the details
     print(f"{away_team} ({away_pitcher_name}, \033[32mERA: {away_pitcher_era}\033[0m) @ {home_team} ({home_pitcher_name}, \033[32mERA: {home_pitcher_era}\033[0m) \033[1m\033[34m{game_datetime.strftime('%I:%M %p')}\033[0m")
 
-# Sort the list by ERA
-sort_pitchers(pitchers)
+# Sort the pitchers
+pitchers = sort_pitchers(pitchers)
 
 # Print the pitchers with the lowest 5 ERAs
-print("\n\033[1m\033[34mTop 5 Pitchers with the Lowest ERAs:\033[0m")
+print("\n\033[1m\033[34mTop 5 Pitchers with the Lowest Run Coefficients:\033[0m")
 for i in range(5):
     try:
         opposing_team = pitchers[i][3]
-
-        print(f"\033[1m\u001b[4m{i + 1}. {pitchers[i][0]}, {pitchers[i][2]} vs {opposing_team}, \033[32mERA: {pitchers[i][1]}\033[0m")
+        print(f"\033[1m\u001b[4m{i + 1}. {pitchers[i][0]}, {pitchers[i][2]} vs {opposing_team}, \033[32mRC: {pitchers[i][7]}, ERA: {pitchers[i][1]}\033[0m")
 
         # Get the lineup of the opposing team
         now = datetime.datetime.now()
@@ -85,11 +81,12 @@ for i in range(5):
         formatted_now = now.strftime('%Y%m%d_%H%M%S')
         boxscore = statsapi.boxscore_data(pitchers[i][5], now)
         batters = get_lineups(boxscore, pitchers[i][4])
-
         batters = sort_batters(batters)
 
-        # Print the first 5 players with the lowest OPS
+        # Print the first 3 players with the lowest run coefficients
         for name, id, ops, xwOBA, run_coefficient in batters[:3]:
             print(f"    {name}, Run coefficient: \033[0;32m{run_coefficient}\033[0m, xwOBA: \033[0;31m{xwOBA}\033[0m, OPS: \033[1;31m{ops}\033[0m")
+      
     except IndexError:
+        print("No more games today.")
         break
