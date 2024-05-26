@@ -72,7 +72,7 @@ print("\n\033[1m\033[34mTop 5 Pitchers with the Lowest Run Coefficients:\033[0m"
 for i in range(5):
     try:
         opposing_team = pitchers[i][3]
-        print(f"\033[1m\u001b[4m{i + 1}. {pitchers[i][0]}, {pitchers[i][2]} vs {opposing_team}, \033[32mRC: {pitchers[i][7]}, ERA: {pitchers[i][1]}\033[0m")
+        print(f"\033[1m\u001b[4m{i + 1}. {pitchers[i][0]}, {pitchers[i][2]} vs {opposing_team}, \033[32mRC: {pitchers[i][7]}, ERA: {pitchers[i][1]}, xwOBA: {pitchers[i][8]}, SIERRA: {pitchers[i][9]}\033[0m")
 
         # Get the lineup of the opposing team
         now = datetime.datetime.now()

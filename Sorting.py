@@ -10,7 +10,7 @@ def calculate_siera(so, pa, bb, gb, ao):
   ground_ball_diff = gb - ao
   ground_ball_diff_rate = ground_ball_diff / pa
 
-  siera = (
+  siera = round(
       6.145  # Constant
       - 16.986 * strikeout_rate
       + 11.434 * walk_rate
@@ -18,7 +18,7 @@ def calculate_siera(so, pa, bb, gb, ao):
       + 7.653 * (strikeout_rate**2)
       + 6.664 * (ground_ball_diff_rate**2)  # Ignore for basic calculation
       + 10.130 * strikeout_rate * ground_ball_diff_rate
-      - 5.195 * walk_rate * ground_ball_diff_rate
+      - 5.195 * walk_rate * ground_ball_diff_rate, 3
   )
 
   return siera
@@ -74,7 +74,7 @@ def sort_pitchers(pitchers):
 
         run_predictor = round((0.40 * float(average_woba) + 0.60 * float(sierra)), 3)
         
-        new_pitcher = (pitcher[0], pitcher[1], pitcher[2], pitcher[3], pitcher[4], pitcher[5], pitcher[6], run_predictor)
+        new_pitcher = (pitcher[0], pitcher[1], pitcher[2], pitcher[3], pitcher[4], pitcher[5], pitcher[6], run_predictor, average_woba, sierra)
       
         # Update the pitchers list with the new tuple
         pitchers[i] = new_pitcher

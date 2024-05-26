@@ -10,7 +10,7 @@ today = datetime.date.today().strftime('%Y-%m-%d')
 now = datetime.datetime.now()
 
 # Get the schedule for today's date
-games = statsapi.schedule(date="2024-05-2390")
+games = statsapi.schedule(date="2024-05-25")
 
 # List to store the details of each pitcher
 pitchers = []
@@ -70,7 +70,7 @@ for i in range(len(pitchers)):
     try:
         opposing_team = pitchers[i][3]
 
-        print(f"\033[1m\u001b[4m{i + 1}. {pitchers[i][0]}, {pitchers[i][2]} vs {opposing_team}, \033[32mRC: {pitchers[i][7]}, ERA: {pitchers[i][1]}\033[0m")
+        print(f"\033[1m\u001b[4m{i + 1}. {pitchers[i][0]}, {pitchers[i][2]} vs {opposing_team}, \033[32mRC: {pitchers[i][7]}, ERA: {pitchers[i][1]}, xwOBA: {pitchers[i][8]}, SIERRA: {pitchers[i][9]}\033[0m")
         # Get the lineup of the opposing team
         now = datetime.datetime.now()
 
