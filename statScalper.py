@@ -3,17 +3,19 @@ import datetime
 from datetime import timedelta
 import math
 from Lineups import get_lineups
-from Sorting import sort_batters, sort_pitchers
+from Sorting import sort_batters, sort_pitchers, pStat_Sort
 
 # Get today's date
-today = datetime.date.today().strftime('%Y-%m-%d')
+today = "2024-05-31"
 now = datetime.datetime.now()
 
 # Get the schedule for today's date
-games = statsapi.schedule(date="2024-05-27")
+games = statsapi.schedule(date=today)
 
 # List to store the details of each pitcher
 pitchers = []
+
+games_data = {today: {}}
 
 # Loop through the games
 print(f"\033[1m\033[34mGames for: {datetime.date.today().strftime('%x')} starting after {now.strftime('%I:%M %p')}  \033[0m")
@@ -39,8 +41,11 @@ for game in games:
 
     # Get the ERA of the home pitcher
     home_pitcher_stats = statsapi.player_stat_data(home_pitcher_id, group='[pitching]', type='season', sportId=1)
-    home_pitcher_era = home_pitcher_stats['stats'][0]['stats']['era']
-    home_pitcher_games = home_pitcher_stats['stats'][0]['stats']['gamesPlayed']
+    if home_pitcher_stats['stats']:
+      home_pitcher_era = home_pitcher_stats['stats'][0]['stats']['era']
+      home_pitcher_games = home_pitcher_stats['stats'][0]['stats']['gamesPlayed']
+    else:
+      continue
 
     # Get the ERA of the away pitcher
     away_pitcher_stats = statsapi.player_stat_data(away_pitcher_id, group='[pitching]', type='season', sportId=1)
@@ -62,7 +67,7 @@ for game in games:
     print(f"{away_team} ({away_pitcher_name}, \033[32mERA: {away_pitcher_era}\033[0m) @ {home_team} ({home_pitcher_name}, \033[32mERA: {home_pitcher_era}\033[0m) \033[1m\033[34m{game_datetime.strftime('%I:%M %p')}\033[0m")
 
 # Sort the pitchers
-pitchers = sort_pitchers(pitchers)
+pitchers = pStat_Sort(pitchers)
 
 # Print the pitchers with the lowest 5 ERAs
 print("\n\033[1m\033[34mAll matchups for the day:\033[0m")
@@ -80,10 +85,21 @@ for i in range(len(pitchers)):
         batters = get_lineups(boxscore, pitchers[i][4])
         batters = sort_batters(batters)
 
+        games_data[today] = {
+           'game_id': pitchers[i][5],
+           'pitcher': pitchers[i][0],
+           'pRC': pitchers[i][7],
+           'batters': []
+        }
+
         # Print the first 3 players with the lowest run coefficients
         for name, id, ops, xwOBA, run_coefficient in batters[:3]:
             print(f"    {name}, Run coefficient: \033[0;32m{run_coefficient}\033[0m, xwOBA: \033[0;31m{xwOBA}\033[0m, OPS: \033[1;31m{ops}\033[0m")
-      
+            games_data[today]['batters'].append({
+               'batter': name,
+               'bRC': run_coefficient,
+            })
+
     except IndexError:
         print("No more games today.")
         break
