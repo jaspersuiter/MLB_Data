@@ -4,6 +4,8 @@ from datetime import timedelta
 import math
 from Lineups import get_lineups
 from Sorting import sort_batters, sort_pitchers, pStat_Sort
+from sqlConnector import insert_data
+from collections import defaultdict
 
 # Get today's date
 today = "2024-05-31"
@@ -15,7 +17,7 @@ games = statsapi.schedule(date=today)
 # List to store the details of each pitcher
 pitchers = []
 
-games_data = {today: {}}
+games_data = defaultdict(lambda: defaultdict(list))
 
 # Loop through the games
 print(f"\033[1m\033[34mGames for: {datetime.date.today().strftime('%x')} starting after {now.strftime('%I:%M %p')}  \033[0m")
@@ -85,12 +87,12 @@ for i in range(len(pitchers)):
         batters = get_lineups(boxscore, pitchers[i][4])
         batters = sort_batters(batters)
 
-        games_data[today] = {
+        games_data[today].append({
            'game_id': pitchers[i][5],
            'pitcher': pitchers[i][0],
            'pRC': pitchers[i][7],
            'batters': []
-        }
+        })
 
         # Print the first 3 players with the lowest run coefficients
         for name, id, ops, xwOBA, run_coefficient in batters[:3]:
@@ -99,6 +101,8 @@ for i in range(len(pitchers)):
                'batter': name,
                'bRC': run_coefficient,
             })
+
+        print(games_data)    
 
     except IndexError:
         print("No more games today.")
