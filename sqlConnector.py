@@ -20,26 +20,30 @@ def insert_data(data):
     cur = conn.cursor()
 
     try:
-        for game_date, game_info in data.items():
-            game_id = game_info['game_id']
-            pitcher = game_info['pitcher']
-            pRC = game_info['pRC']
+        for game_date, games_info in data.items():
+            for game_key, game_info in games_info.items():
+                game_id = game_info['game_id']
+                pitcher = game_info['pitcher']
+                pRC = game_info['pRC']
+                pitcher_ranking = game_info['ranking']
 
-            # Insert data into the games table
-            cur.execute(
-                sql.SQL("INSERT INTO games (game_id, game_date, pitcher, pRC) VALUES (%s, %s, %s, %s)"),
-                [game_id, game_date, pitcher, pRC]
-            )
-
-            # Insert data into the batters table
-            for batter_info in game_info['batters']:
-                batter = batter_info['batter']
-                bRC = batter_info['bRC']
-                run_scored = False  # Example value, adjust as needed
+                # Insert data into the games table with the new ranking field
                 cur.execute(
-                    sql.SQL("INSERT INTO batters (game_id, batter, bRC, run_scored, date) VALUES (%s, %s, %s, %s, %s)"),
-                    [game_id, batter, bRC, run_scored, game_date]
+                    sql.SQL("INSERT INTO games (game_id, game_date, pitcher, pRC, ranking) VALUES (%s, %s, %s, %s, %s, %s)"),
+                    [game_key, game_id, game_date, pitcher, pRC, pitcher_ranking]
                 )
+
+                # Insert data into the batters table with batter_id and ranking
+                for batter_info in game_info['batters']:
+                    batter_id = batter_info['batter_id']
+                    batter = batter_info['batter']
+                    bRC = batter_info['bRC']
+                    batter_ranking = batter_info['ranking']
+                    run_scored = False  # Example value, adjust as needed
+                    cur.execute(
+                        sql.SQL("INSERT INTO batters (game_id, batter_id, batter, bRC, run_scored, date, ranking) VALUES (%s, %s, %s, %s, %s, %s, %s)"),
+                        [game_key, batter_id, batter, bRC, run_scored, game_date, batter_ranking]
+                    )
 
         # Commit the changes
         conn.commit()

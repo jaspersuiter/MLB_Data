@@ -42,9 +42,9 @@ def sort_batters(lineup):
             runs = statsapi.player_stat_data(personId, group='[hitting]', type='season', sportId=1)['stats'][0]['stats']['runs']
             at_bats = statsapi.player_stat_data(personId, group='[hitting]', type='season', sportId=1)['stats'][0]['stats']['plateAppearances']
             
-            run_predictor = round((((runs/at_bats) * .60) + (0.75 * xwoba + 0.25 * ops) * .40), 3)
+            run_coefficient = round((((runs/at_bats) * .60) + (0.75 * xwoba + 0.25 * ops) * .40), 3)
             
-            lineup[i] = (name, personId, ops, xwoba, run_predictor)
+            lineup[i] = (name, personId, ops, xwoba, run_coefficient)
 
     lineup = sorted(lineup, key=lambda x: x[4])
 
@@ -72,15 +72,14 @@ def sort_pitchers(pitchers):
         }
         sierra = calculate_siera(**sierra_stats)
 
-        run_predictor = round((0.40 * float(average_woba) + 0.60 * float(sierra)), 3)
+        run_coefficient = round((0.40 * float(average_woba) + 0.60 * float(sierra)), 3)
         
-        new_pitcher = (pitcher[0], pitcher[1], pitcher[2], pitcher[3], pitcher[4], pitcher[5], pitcher[6], run_predictor, average_woba, sierra)
-      
+        new_pitcher = (pitcher[0], pitcher[1], pitcher[2], pitcher[3], pitcher[4], pitcher[5], pitcher[6], run_coefficient, average_woba, sierra)
+        
         # Update the pitchers list with the new tuple
         pitchers[i] = new_pitcher
-
-    pitchers = sorted(pitchers, key=lambda x: x[-1])
-       # calculate SIERA here 6.145 - 16.986(SO/PA) + 11.434(BB/PA) - 1.858((GB-FB-PU)/PA) + 7.653((SO/PA)^2) +/- 6.664(((GB-FB-PU)/PA)^2) + 10.130(SO/PA)((GB-FB-PU)/PA) - 5.195(BB/PA)*((GB-FB-PU)/PA)
+    
+    pitchers = sorted(pitchers, key=lambda x: x[7])
     return pitchers   
 
 def pStat_Sort(pitchers):

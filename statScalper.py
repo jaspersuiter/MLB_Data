@@ -17,7 +17,7 @@ games = statsapi.schedule(date=today)
 # List to store the details of each pitcher
 pitchers = []
 
-games_data = defaultdict(lambda: defaultdict(list))
+games_data = {today: {}}
 
 # Loop through the games
 print(f"\033[1m\033[34mGames for: {datetime.date.today().strftime('%x')} starting after {now.strftime('%I:%M %p')}  \033[0m")
@@ -86,21 +86,26 @@ for i in range(len(pitchers)):
         boxscore = statsapi.boxscore_data(pitchers[i][5], now)
         batters = get_lineups(boxscore, pitchers[i][4])
         batters = sort_batters(batters)
-
-        games_data[today].append({
+        game_key = str(pitchers[i][5]) + pitchers[i][4][0]
+        
+        games_data[today][game_key] = {
            'game_id': pitchers[i][5],
            'pitcher': pitchers[i][0],
            'pRC': pitchers[i][7],
-           'batters': []
-        })
-
+           'ranking': i + 1,
+           'batters': []}
+        print(games_data)
         # Print the first 3 players with the lowest run coefficients
+        j = 1
         for name, id, ops, xwOBA, run_coefficient in batters[:3]:
             print(f"    {name}, Run coefficient: \033[0;32m{run_coefficient}\033[0m, xwOBA: \033[0;31m{xwOBA}\033[0m, OPS: \033[1;31m{ops}\033[0m")
-            games_data[today]['batters'].append({
+            games_data[today][game_key]['batters'].append({
+               'batter_id': id,
                'batter': name,
                'bRC': run_coefficient,
+               'ranking': j,
             })
+            j += 1
 
         print(games_data)    
 
