@@ -8,7 +8,7 @@ from sqlConnector import insert_data
 from collections import defaultdict
 
 # Get today's date
-today = "2024-08-07"
+today = "2024-07-08" # YYYY-MM-DD
 now = datetime.datetime.now()
 
 # Get the schedule for today's date
@@ -85,7 +85,7 @@ for i in range(len(pitchers)):
         formatted_now = now.strftime('%Y%m%d_%H%M%S')
         boxscore = statsapi.boxscore_data(pitchers[i][5], now)
         batters = get_lineups(boxscore, pitchers[i][4])
-        batters = sort_batters(batters)
+        batters = sort_batters(batters, pitchers[i][4])
         game_key = str(pitchers[i][5]) + pitchers[i][4][0]
         
         games_data[today][game_key] = {
@@ -94,7 +94,7 @@ for i in range(len(pitchers)):
            'pRC': pitchers[i][7],
            'ranking': i + 1,
            'batters': []}
-        print(games_data)
+
         # Print the first 3 players with the lowest run coefficients
         j = 1
         for name, id, ops, xwOBA, run_coefficient in batters[:3]:
@@ -105,12 +105,10 @@ for i in range(len(pitchers)):
                'bRC': run_coefficient,
                'ranking': j,
             })
-            j += 1
-
-        print(games_data)    
+            j += 1   
 
     except IndexError:
         print("No more games today.")
         break
     
-insert_data(games_data)     
+# insert_data(games_data)     

@@ -1,4 +1,5 @@
 from pybaseball import statcast_pitcher, statcast_batter
+from Lineups import get_lineups 
 import statsapi
 import os
 import sys
@@ -26,18 +27,19 @@ def calculate_siera(so, pa, bb, gb, ao):
   return siera
 
 
-def get_lineups_if_null(lineup):
-    words = lineup[0].split(" ")
+def get_lineups_if_null(lineup, opposing_team):
+    words = lineup[0][0].split(" ")
     team_name = " ".join(words[:-1]) 
     team_id = statsapi.lookup_team(team_name)[0] 
+ 
+    boxscore = statsapi.boxscore_data(statsapi.last_game(team_id['id']))
+    batters = get_lineups(boxscore, opposing_team)
 
-    print(team_id)
+    return batters
 
-    print(statsapi.last_game(team_id))
-
-def sort_batters(lineup):
-    if len(lineup) < 1:
-        get_lineups_if_null(lineup)
+def sort_batters(lineup, opposing_team):
+    if len(lineup) < 2:
+        lineup = get_lineups_if_null(lineup, opposing_team)
     for i, batter in enumerate(lineup):
         name, personId, ops, xwoba = batter
         if personId == 0:
