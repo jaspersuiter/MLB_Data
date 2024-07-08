@@ -29,7 +29,7 @@ def insert_data(data):
 
                 # Insert data into the games table with the new ranking field
                 cur.execute(
-                    sql.SQL("INSERT INTO games (game_id, game_date, pitcher, pRC, ranking) VALUES (%s, %s, %s, %s, %s, %s)"),
+                    sql.SQL("INSERT INTO games (game_key, game_id, game_date, pitcher, pRC, ranking) VALUES (%s, %s, %s, %s, %s, %s)"),
                     [game_key, game_id, game_date, pitcher, pRC, pitcher_ranking]
                 )
 
@@ -39,9 +39,9 @@ def insert_data(data):
                     batter = batter_info['batter']
                     bRC = batter_info['bRC']
                     batter_ranking = batter_info['ranking']
-                    run_scored = False  # Example value, adjust as needed
+                    run_scored = False
                     cur.execute(
-                        sql.SQL("INSERT INTO batters (game_id, batter_id, batter, bRC, run_scored, date, ranking) VALUES (%s, %s, %s, %s, %s, %s, %s)"),
+                        sql.SQL("INSERT INTO batters (game_key, batter_id, batter, bRC, run_scored, date, ranking) VALUES (%s, %s, %s, %s, %s, %s, %s)"),
                         [game_key, batter_id, batter, bRC, run_scored, game_date, batter_ranking]
                     )
 

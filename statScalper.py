@@ -8,7 +8,7 @@ from sqlConnector import insert_data
 from collections import defaultdict
 
 # Get today's date
-today = "2024-05-31"
+today = "2024-08-07"
 now = datetime.datetime.now()
 
 # Get the schedule for today's date
@@ -20,7 +20,7 @@ pitchers = []
 games_data = {today: {}}
 
 # Loop through the games
-print(f"\033[1m\033[34mGames for: {datetime.date.today().strftime('%x')} starting after {now.strftime('%I:%M %p')}  \033[0m")
+print(f"\033[1m\033[34mGames for: {datetime.date.today().strftime('%x')}\033[0m")
 for game in games:
     
     game_datetime = datetime.datetime.fromisoformat(game['game_datetime'].rstrip('Z'))
@@ -112,3 +112,5 @@ for i in range(len(pitchers)):
     except IndexError:
         print("No more games today.")
         break
+    
+insert_data(games_data)     
