@@ -5,7 +5,7 @@ import math
 from Lineups import get_lineups
 from Sorting import sort_batters, sort_pitchers, pStat_Sort
 from sqlConnector import insert_data
-from collections import defaultdict
+from Stats import update_runs_init
 
 # Get today's date
 today = "2024-07-08" # YYYY-MM-DD
@@ -111,4 +111,5 @@ for i in range(len(pitchers)):
         print("No more games today.")
         break
     
-# insert_data(games_data)     
+insert_data(games_data)
+update_runs_init()  
