@@ -8,7 +8,7 @@ from sqlConnector import insert_data
 from Stats import update_runs_init
 
 # Get today's date
-today = "2024-07-08" # YYYY-MM-DD
+today = "2024-05-18" # YYYY-MM-DD
 now = datetime.datetime.now()
 
 # Get the schedule for today's date
@@ -20,7 +20,7 @@ pitchers = []
 games_data = {today: {}}
 
 # Loop through the games
-print(f"\033[1m\033[34mGames for: {datetime.date.today().strftime('%x')}\033[0m")
+print(f"\033[1m\033[34mGames for: {today}\033[0m")
 for game in games:
     
     game_datetime = datetime.datetime.fromisoformat(game['game_datetime'].rstrip('Z'))
@@ -112,4 +112,4 @@ for i in range(len(pitchers)):
         break
     
 insert_data(games_data)
-update_runs_init()  
+update_runs_init(today)

@@ -5,9 +5,75 @@ import os
 from dotenv import load_dotenv
 from collections import defaultdict
 
-date = "2024-07-08" # YYYY-MM-DD
+date = "2024-05-18" # YYYY-MM-DD
 
-from psycopg2.extensions import adapt, AsIs
+def connect_to_db():
+    conn = psycopg2.connect(
+    dbname="mlb_data",
+    user="postgres",
+    password=os.getenv("DB_PASSWORD"),
+    host="mlbdata.c9aqq4kw2945.us-east-2.rds.amazonaws.com",
+    port="5432"
+  )
+    return conn
+
+def update_all_time_averages(conn):
+    cur = conn.cursor()
+
+    try:
+        # Calculate all-time averages
+        cur.execute("""
+           SELECT ROUND(AVG(first_5)::numeric, 2) AS all_time_first_5_avg,
+            ROUND(AVG(second_5)::numeric, 2) AS all_time_second_5_avg,
+            ROUND(AVG(third_5)::numeric, 2) AS all_time_third_5_avg,
+            ROUND(AVG("First")::numeric, 2) AS all_time_first,
+            ROUND(AVG("Second")::numeric, 2) AS all_time_second,
+            ROUND(AVG(third)::numeric, 2) AS all_time_third,
+            ROUND(AVG("Primary")::numeric, 2) AS all_time_primary,
+            ROUND(AVG(overall)::numeric, 2) AS all_time_overall
+           FROM stats
+          """)
+        all_time_averages = cur.fetchone()
+
+        # Update all-time averages in the stats table
+        cur.execute("""
+            UPDATE stats
+            SET first_5 = %s,
+                second_5 = %s,
+                third_5 = %s,
+                "First" = %s,
+                "Second" = %s,
+                third = %s,
+                "Primary" = %s,
+                overall = %s
+            WHERE date = 'All Time'
+        """, all_time_averages)
+        
+        conn.commit()
+        print("All-time averages updated successfully!")
+
+    except psycopg2.Error as e:
+        conn.rollback()
+        print(f"Error: {e}")
+
+    finally:
+        cur.close()
+
+def fetch_game_and_batters_data(conn):
+    cur = conn.cursor()
+
+    # SQL query to fetch game_key, pitcher, ranking from games table
+    # and game_key, run_scored, ranking from batters table
+    query = """
+    SELECT g.game_key, g.pitcher, g.ranking, b.run_scored, b.ranking
+    FROM games g
+    JOIN batters b ON g.game_key = b.game_key
+    WHERE b.date = %s
+    """
+    cur.execute(query, (date,))
+    rows = cur.fetchall()
+    cur.close()
+    return rows
 
 def update_run_scored(conn, batter_ids):
     cur = conn.cursor()
@@ -40,16 +106,13 @@ def update_run_scored(conn, batter_ids):
 
     cur.close()
 
-def update_runs_init():
+    update_stats()
+
+def update_runs_init(date):
+  date = date
   load_dotenv()
   # Database connection parameters
-  conn = psycopg2.connect(
-    dbname="mlb_data",
-    user="postgres",
-    password=os.getenv("DB_PASSWORD"),
-    host="mlbdata.c9aqq4kw2945.us-east-2.rds.amazonaws.com",
-    port="5432"
-  )
+  conn = connect_to_db()
 
   print("Connected to the database")
 
@@ -87,4 +150,74 @@ def update_runs_init():
 
   update_run_scored(conn, scorerers)
 
-update_runs_init()
+  conn.close()
+
+def insert_averages(conn, averages):
+    cur = conn.cursor()
+
+     # Define the INSERT statement with placeholders for values including date
+    insert_query = """
+    INSERT INTO stats (date, first_5, second_5, third_5, "First", "Second", third, "Primary", overall)
+    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+    """
+
+    # Execute the INSERT statement with the provided data
+    cur.execute(insert_query, (date,) + tuple(averages))
+    conn.commit()
+    conn.commit()
+
+    cur.close()
+
+def update_stats():
+  conn = connect_to_db()
+
+  averages = []
+  first = 0
+  second = 0
+  third = 0
+  first_5 = 0
+  second_5 = 0
+  third_5 = 0
+  game_counter = set()
+  
+  # Fetch game and batters data for the specified date
+  data = fetch_game_and_batters_data(conn)
+  
+  # Print or process the fetched data
+  for row in data:
+      game_key, pitcher, game_ranking, run_scored, batter_ranking = row
+      print(f"Game Key: {game_key}, Pitcher: {pitcher}, Game Ranking: {game_ranking}")
+      print(f"Run Scored: {run_scored}, Batter Ranking: {batter_ranking}")
+      print("---")
+
+       # Apply conditions and increment counters
+      if game_ranking <= 5:
+          if batter_ranking == 1 and not run_scored:
+              first_5 += 1
+          elif batter_ranking == 2 and not run_scored:
+              second_5 += 1
+          elif batter_ranking == 3 and not run_scored:
+              third_5 += 1
+
+      if batter_ranking == 1 and not run_scored:
+          first += 1
+      elif batter_ranking == 2 and not run_scored:
+          second += 1
+      elif batter_ranking == 3 and not run_scored:
+          third += 1      
+
+      game_counter.add(game_key)
+  
+  averages.append(round(first_5/5 * 100, 2))
+  averages.append(round(second_5/5 * 100, 2))
+  averages.append(round(third_5/5 * 100, 2))
+  averages.append(round(first/len(game_counter) * 100, 2))
+  averages.append(round(second/len(game_counter) * 100, 2))
+  averages.append(round(third/len(game_counter) * 100, 2))
+  averages.append(round((averages[0] + averages[1] + averages[2]) / 3, 2))
+  averages.append(round((averages[3] + averages[4] + averages[5]) / 3, 2))
+
+  insert_averages(conn, averages)
+  update_all_time_averages(conn)
+
+  conn.close()
