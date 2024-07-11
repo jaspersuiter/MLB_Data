@@ -8,7 +8,7 @@ from sqlConnector import insert_data
 from Stats import update_runs_init
 
 # Get today's date
-today = "2024-07-10" # YYYY-MM-DD
+today = "2024-06-29" # YYYY-MM-DD
 now = datetime.datetime.now()
 
 # Get the schedule for today's date
@@ -72,7 +72,7 @@ for game in games:
 pitchers = sort_pitchers(pitchers)
 
 # Print the pitchers with the lowest 5 ERAs
-print("\n\033[1m\033[34mAll matchups for the day:\033[0m")
+print(f"\n\033[1m\033[34mAll matchups for the day: ({len(pitchers)})\033[0m")
 for i in range(len(pitchers)):
     try:
         opposing_team = pitchers[i][3]

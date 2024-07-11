@@ -5,15 +5,13 @@ import os
 from dotenv import load_dotenv
 from collections import defaultdict
 
-date = "2024-05-18" # YYYY-MM-DD
-
 def connect_to_db():
     conn = psycopg2.connect(
     dbname="mlb_data",
     user="postgres",
     password=os.getenv("DB_PASSWORD"),
     host="mlbdata.c9aqq4kw2945.us-east-2.rds.amazonaws.com",
-    port="5432"
+    port="5432" 
   )
     return conn
 
@@ -34,6 +32,8 @@ def update_all_time_averages(conn):
            FROM stats
           """)
         all_time_averages = cur.fetchone()
+
+        print(all_time_averages)
 
         # Update all-time averages in the stats table
         cur.execute("""
@@ -59,7 +59,7 @@ def update_all_time_averages(conn):
     finally:
         cur.close()
 
-def fetch_game_and_batters_data(conn):
+def fetch_game_and_batters_data(conn, date):
     cur = conn.cursor()
 
     # SQL query to fetch game_key, pitcher, ranking from games table
@@ -75,7 +75,7 @@ def fetch_game_and_batters_data(conn):
     cur.close()
     return rows
 
-def update_run_scored(conn, batter_ids):
+def update_run_scored(conn, batter_ids, date):
     cur = conn.cursor()
     # Before update: Optionally, select and print rows to be updated for verification
     select_query = """
@@ -106,10 +106,9 @@ def update_run_scored(conn, batter_ids):
 
     cur.close()
 
-    update_stats()
+    update_stats(date)
 
 def update_runs_init(date):
-  date = date
   load_dotenv()
   # Database connection parameters
   conn = connect_to_db()
@@ -148,11 +147,11 @@ def update_runs_init(date):
 
   print(scorerers)          
 
-  update_run_scored(conn, scorerers)
+  update_run_scored(conn, scorerers, date)
 
   conn.close()
 
-def insert_averages(conn, averages):
+def insert_averages(conn, averages, date):
     cur = conn.cursor()
 
      # Define the INSERT statement with placeholders for values including date
@@ -168,7 +167,7 @@ def insert_averages(conn, averages):
 
     cur.close()
 
-def update_stats():
+def update_stats(date):
   conn = connect_to_db()
 
   averages = []
@@ -181,7 +180,7 @@ def update_stats():
   game_counter = set()
   
   # Fetch game and batters data for the specified date
-  data = fetch_game_and_batters_data(conn)
+  data = fetch_game_and_batters_data(conn, date)
   
   # Print or process the fetched data
   for row in data:
@@ -217,7 +216,7 @@ def update_stats():
   averages.append(round((averages[0] + averages[1] + averages[2]) / 3, 2))
   averages.append(round((averages[3] + averages[4] + averages[5]) / 3, 2))
 
-  insert_averages(conn, averages)
+  insert_averages(conn, averages, date)
   update_all_time_averages(conn)
 
   conn.close()
