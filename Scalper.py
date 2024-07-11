@@ -72,7 +72,7 @@ pitchers = sort_pitchers(pitchers)
 
 # Print the pitchers with the lowest 5 ERAs
 print("\n\033[1m\033[34mAll matchups for the day:\033[0m")
-for i in range(len(pitchers[:5])):
+for i in range(len(pitchers)):
     try:
         opposing_team = pitchers[i][3]
 

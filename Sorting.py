@@ -96,34 +96,3 @@ def sort_pitchers(pitchers):
     
     pitchers = sorted(pitchers, key=lambda x: x[7])
     return pitchers   
-
-def pStat_Sort(pitchers):
-    for i, pitcher in enumerate(pitchers):
-        
-        original_stdout = sys.stdout
-        sys.stdout = open(os.devnull, 'w')
-        pitcher_stats = statcast_pitcher(start_dt='2024-01-01', end_dt='2024-12-31', player_id=pitcher[6])
-        sys.stdout.close()
-        sys.stdout = original_stdout
-
-        pitchers_info = statsapi.player_stat_data(pitcher[6], group='pitching', type='season')['stats'][0]['stats']
-        woba = pitcher_stats['estimated_woba_using_speedangle']
-        average_woba = round(woba.mean(), 3)
-
-        sierra_stats = {
-        "so": pitchers_info['strikeOuts'],
-        "pa": pitchers_info['atBats'],
-        "bb": pitchers_info['baseOnBalls'],
-        "gb": pitchers_info['groundOuts'],
-        "ao": pitchers_info['airOuts']
-        }
-        sierra = calculate_siera(**sierra_stats)
-
-        run_predictor = round((0.40 * float(average_woba) + 0.60 * float(sierra)), 3)
-        
-        new_pitcher = (pitcher[0], pitcher[1], pitcher[2], pitcher[3], pitcher[4], pitcher[5], pitcher[6], run_predictor, average_woba, sierra)
-      
-        # Update the pitchers list with the new tuple
-        pitchers[i] = new_pitcher
-
-    return pitchers   

@@ -3,12 +3,12 @@ import datetime
 from datetime import timedelta
 import math
 from Lineups import get_lineups
-from Sorting import sort_batters, sort_pitchers, pStat_Sort
+from Sorting import sort_batters, sort_pitchers
 from sqlConnector import insert_data
 from Stats import update_runs_init
 
 # Get today's date
-today = "2024-05-18" # YYYY-MM-DD
+today = "2024-07-10" # YYYY-MM-DD
 now = datetime.datetime.now()
 
 # Get the schedule for today's date
@@ -69,7 +69,7 @@ for game in games:
     print(f"{away_team} ({away_pitcher_name}, \033[32mERA: {away_pitcher_era}\033[0m) @ {home_team} ({home_pitcher_name}, \033[32mERA: {home_pitcher_era}\033[0m) \033[1m\033[34m{game_datetime.strftime('%I:%M %p')}\033[0m")
 
 # Sort the pitchers
-pitchers = pStat_Sort(pitchers)
+pitchers = sort_pitchers(pitchers)
 
 # Print the pitchers with the lowest 5 ERAs
 print("\n\033[1m\033[34mAll matchups for the day:\033[0m")
